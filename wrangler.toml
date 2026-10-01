@@ -1,0 +1,6 @@
+name = "pdo2-tt6-api"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://내계정.github.io"  # GitHub Pages 주소의 도메인 부분만(경로 제외)
