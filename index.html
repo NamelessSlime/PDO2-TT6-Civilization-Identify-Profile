@@ -25,35 +25,35 @@
 			}
 			@media (prefers-color-scheme:dark) {
 			:root:not([data-theme="light"]) {
-			--bg:#10142a;
-			--card:#181e3a;
-			--ink:#e8ebf8;
-			--mute:#98a1c4;
-			--line:#2d3558;
-			--navy:#9fb2ee;
-			--on:#9fb2ee;
-			--onink:#10142a;
-			--nat:#6ea2dd;
-			--ext:#a98ad6;
-			--mag:#e0a63c;
-			--ano:#e2776d;
-			--fill:rgba(159,178,238,.22)
+			--bg:#202124;
+			--card:#292a2d;
+			--ink:#e8eaed;
+			--mute:#9aa0a6;
+			--line:#3c4043;
+			--navy:#8ab4f8;
+			--on:#8ab4f8;
+			--onink:#202124;
+			--nat:#669df6;
+			--ext:#c58af9;
+			--mag:#fdd663;
+			--ano:#f28b82;
+			--fill:rgba(138,180,248,.22)
 			}
 			}
 			:root[data-theme="dark"] {
-			--bg:#10142a;
-			--card:#181e3a;
-			--ink:#e8ebf8;
-			--mute:#98a1c4;
-			--line:#2d3558;
-			--navy:#9fb2ee;
-			--on:#9fb2ee;
-			--onink:#10142a;
-			--nat:#6ea2dd;
-			--ext:#a98ad6;
-			--mag:#e0a63c;
-			--ano:#e2776d;
-			--fill:rgba(159,178,238,.22)
+			--bg:#202124;
+			--card:#292a2d;
+			--ink:#e8eaed;
+			--mute:#9aa0a6;
+			--line:#3c4043;
+			--navy:#8ab4f8;
+			--on:#8ab4f8;
+			--onink:#202124;
+			--nat:#669df6;
+			--ext:#c58af9;
+			--mag:#fdd663;
+			--ano:#f28b82;
+			--fill:rgba(138,180,248,.22)
 			}
 			* {
 			box-sizing:border-box
@@ -310,6 +310,34 @@
 			}
 			.why p {
 			margin:6px 0
+			}
+			.top {
+			display:flex;
+			align-items:flex-start;
+			justify-content:space-between;
+			gap:10px;
+			flex-wrap:wrap
+			}
+			.thm {
+			display:inline-flex;
+			border:1px solid var(--line);
+			border-radius:8px;
+			overflow:hidden;
+			background:var(--card)
+			}
+			.thm button {
+			border:0;
+			background:transparent;
+			color:var(--mute);
+			font:inherit;
+			font-size:.8rem;
+			padding:5px 11px;
+			cursor:pointer
+			}
+			.thm button[aria-pressed=true] {
+			background:var(--on);
+			color:var(--onink);
+			font-weight:700
 			}
 			.tabs {
 			display:flex;
@@ -710,7 +738,14 @@
 </head>
 <body>
 	<main>
-		<h1>PDO2-TT6 문명 프로필</h1>
+		<div class="top">
+			<h1>PDO2-TT6 문명 프로필</h1>
+			<div class="thm" id="thm" role="group" aria-label="테마">
+				<button type="button" data-t="auto" aria-pressed="true" title="브라우저 테마를 따름">자동</button>
+				<button type="button" data-t="light" aria-pressed="false">라이트</button>
+				<button type="button" data-t="dark" aria-pressed="false">다크</button>
+			</div>
+		</div>
 		<p class="sub" id="subTop" hidden>분야별 단계를 눌러 문명의 기술 프로필을 그려 보세요. 각 축은 독립적이며 합산하지 않습니다.</p>
 		<div class="tabs" role="tablist">
 			<button role="tab" id="t0" aria-selected="true">소개</button>
@@ -780,10 +815,10 @@
 			<tr style="--c:var(--nat)"><td class="cd">Nu</td><td>Nuclear Engineering</td><td>원자핵·핵반응 기술</td></tr>
 			<tr style="--c:var(--nat)"><td class="cd">Ae</td><td>Aerospace Engineering</td><td>항공·우주 비행 및 우주 활동</td></tr>
 			<tr class="gh" style="--c:var(--ext)"><td colspan="3">확장 이론적 패러다임<small>정보·인지·공간·시간·인과를 직접 대상으로</small></td></tr>
-			<tr style="--c:var(--ext)"><td class="cd">Mn</td><td>Memetic Engineering</td><td>정보·개념·문화·인지적 전파</td></tr>
 			<tr style="--c:var(--ext)"><td class="cd">Sp</td><td>Spatial Engineering</td><td>공간·차원 구조의 조작</td></tr>
 			<tr style="--c:var(--ext)"><td class="cd">Te</td><td>Temporal Engineering</td><td>시간의 조작</td></tr>
 			<tr style="--c:var(--ext)"><td class="cd">Ca</td><td>Causal Engineering</td><td>인과관계의 조작</td></tr>
+			<tr style="--c:var(--ext)"><td class="cd">Mn</td><td>Memetic Engineering</td><td>정보·개념·문화·인지적 전파</td></tr>
 			<tr class="gh" style="--c:var(--mag)"><td colspan="3">신비적 패러다임<small>마법 현상과 규칙 자체를 공학의 기반으로</small></td></tr>
 			<tr style="--c:var(--mag)"><td class="cd">Mg</td><td>Magitech / Thaumaturgical Engineering</td><td>마법의 공학적 활용·체계화</td></tr>
 			<tr class="gh" style="--c:var(--ano)"><td colspan="3">이상현상 패러다임<small>이상현상 자체를 공학의 기반으로</small></td></tr>
@@ -851,7 +886,6 @@
 			<button id="copy">표기 복사</button>
 			<button id="save">이미지로 저장</button>
 			<button id="clr">초기화</button>
-			<button id="thm">테마 전환</button>
 		</div>
 </div>
 <div class="card" style="margin-top:14px">
@@ -871,7 +905,7 @@ const G=[ {
 }
 ,
 {
-	id:"ext",t:"확장 이론적 패러다임",c:"var(--ext)",f:[["Mn","Memetic"],["Sp","Spatial"],["Te","Temporal"],["Ca","Causal"]]
+	id:"ext",t:"확장 이론적 패러다임",c:"var(--ext)",f:[["Sp","Spatial"],["Te","Temporal"],["Ca","Causal"],["Mn","Memetic"]]
 }
 ,
 {
@@ -891,6 +925,7 @@ const G=[ {
 	c,n,g
 	}
 	)));
+	const RO=fields.map(f=>f.c);
 	const NS="http://www.w3.org/2000/svg";
 	function el(tag,attrs,parent,txt) {
 	const e=document.createElementNS(NS,tag);
@@ -963,7 +998,7 @@ const G=[ {
 	function radar() {
 	const s=$("radar");
 	s.innerHTML="";
-	const cx=260,cy=260,R=185,n=ORDER.length,step=2*Math.PI/n;
+	const cx=260,cy=260,R=185,n=RO.length,step=2*Math.PI/n;
 	const ang=i=>-Math.PI/2+i*step;
 	const pt=(i,r)=>[cx+r*Math.cos(ang(i)),cy+r*Math.sin(ang(i))];
 	let idx=0;
@@ -981,7 +1016,7 @@ const G=[ {
 	for(let k=1;
 	k<=6;
 	k++) {
-	const p=ORDER.map((_,i)=>pt(i,R*k/6).join(",")).join(" ");
+	const p=RO.map((_,i)=>pt(i,R*k/6).join(",")).join(" ");
 	el("polygon", {
 	points:p,fill:"none",stroke:"var(--line)","stroke-width":k===6?1.5:1
 	}
@@ -991,7 +1026,7 @@ const G=[ {
 	}
 	,s,RM[k-1]);
 	}
-	ORDER.forEach((_,i)=> {
+	RO.forEach((_,i)=> {
 	const [x,y]=pt(i,R);
 	el("line", {
 	x1:cx,y1:cy,x2:x,y2:y,stroke:"var(--line)"
@@ -999,11 +1034,11 @@ const G=[ {
 	,s)
 	}
 	);
-	const empty=ORDER.every(c=>!lv[c]);
+	const empty=RO.every(c=>!lv[c]);
 	if(empty) {
 	const g=EXS[0].l;
 	el("polygon", {
-	points:ORDER.map((_,i)=>pt(i,R*g[i]/6).join(",")).join(" "),fill:"var(--fill)",stroke:"var(--navy)","stroke-width":2,"stroke-dasharray":"6 4",opacity:.25
+	points:RO.map((_,i)=>pt(i,R*g[ORDER.indexOf(RO[i])]/6).join(",")).join(" "),fill:"var(--fill)",stroke:"var(--navy)","stroke-width":2,"stroke-dasharray":"6 4",opacity:.25
 	}
 	,s);
 	el("text", {
@@ -1011,12 +1046,12 @@ const G=[ {
 	}
 	,s,"예) 단계를 고르면 이 자리에 내 프로필이 그려집니다")
 	}
-	const pts=ORDER.map((c,i)=>pt(i,R*(lv[c]||0)/6));
+	const pts=RO.map((c,i)=>pt(i,R*(lv[c]||0)/6));
 	el("polygon", {
 	points:pts.map(p=>p.join(",")).join(" "),fill:"var(--fill)",stroke:"var(--navy)","stroke-width":2.5,"stroke-linejoin":"round"
 	}
 	,s);
-	ORDER.forEach((c,i)=> {
+	RO.forEach((c,i)=> {
 	const f=fields.find(x=>x.c===c),[px,py]=pts[i],[lx,ly]=pt(i,R+24);
 	const d=el("circle", {
 	cx:px,cy:py,r:5,fill:f.g.c,stroke:"var(--card)","stroke-width":1.5
@@ -1048,14 +1083,14 @@ const G=[ {
 	$("pdoCode").textContent=gp?`예) ${pdoStr(E.pd)}\n= ${AX.map(([t,o],a)=>o[E.pd[a]].split(" ")[1]).join(" / ")}`:`${pc}\n= ${pn}`;
 	$("pdoCode").classList.toggle("ghost",gp);
 	$("pdoCode").style.whiteSpace="pre-wrap";
-	const doc=["Ma","Me","St","El","Bi","Mn","Qu","Nu","Sp","Te","Ca","Ae","Mg","An"];
-	$("ttCode").textContent=gt?"예) "+ORDER.map((c,i)=>`${c}-${E.l[i]?RM[E.l[i]-1]:"—"}`).join(" · "):doc.map(c=>`${c}-${lv[c]?RM[lv[c]-1]:"—"}`).join(" · ");
+	const doc=RO;
+	$("ttCode").textContent=gt?"예) "+RO.map(c=>{const v=E.l[ORDER.indexOf(c)];return `${c}-${v?RM[v-1]:"—"}`}).join(" · "):doc.map(c=>`${c}-${lv[c]?RM[lv[c]-1]:"—"}`).join(" · ");
 	$("ttCode").classList.toggle("ghost",gt);
 	const tl=gt?E.l:ORDER.map(c=>lv[c]||0),gd=$("ttGrid");
 	gd.innerHTML="";
 	gd.classList.toggle("ghost",gt);
-	ORDER.forEach((c,i)=> {
-	const f=fields.find(q=>q.c===c),t=document.createElement("div");
+	RO.forEach(c=> {
+	const i=ORDER.indexOf(c),f=fields.find(q=>q.c===c),t=document.createElement("div");
 	t.className="tile";
 	t.style.setProperty("--c",f.g.c);
 	t.innerHTML=`<b>${c}</b><span class="${tl[i]?"":"no"}">${tl[i]?RM[tl[i]-1]:"—"}</span>`;
@@ -1093,13 +1128,21 @@ const G=[ {
 	render()
 	}
 	;
-	$("thm").onclick=()=> {
-	const r=document.documentElement;
-	const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
-	r.dataset.theme=dark?"light":"dark";
+	{
+	const r=document.documentElement,mq=matchMedia("(prefers-color-scheme:dark)"),box=$("thm");
+	function setTheme(t) {
+	if(t==="light"||t==="dark") r.dataset.theme=t;
+	else delete r.dataset.theme;
+	box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.t===(t||"auto"))));
 	render()
 	}
+	box.querySelectorAll("button").forEach(b=>b.onclick=()=>setTheme(b.dataset.t));
+	const onSys=()=> {
+	if(!r.dataset.theme) render()
+	}
 	;
+	mq.addEventListener?mq.addEventListener("change",onSys):mq.addListener(onSys)
+	}
 	let imgData="",curId=null,selSv=null;
 	function showImg() {
 	const b=$("imgBox");
@@ -1172,7 +1215,7 @@ const G=[ {
 	"why": {
 	"pdo":"A(Anomaly): 오브젝트는 단순히 아직 과학적으로 밝혀지지 않은 현상이 아니라, 기존의 물리법칙이나 마법적 규칙으로 환원되지 않는 이상현상으로 작동하며 문명의 생존과 기술적 대응이 이러한 오브젝트의 존재를 전제로 이루어진다. I(Inner): 인류의 주요 활동과 생존 기반은 서울을 비롯한 기존 도시권에 집중되어 있다. I(Individual): 초기에는 연구소·협회·기업·국가 등 집단이 오브젝트와 기술을 운용하지만, 후기에는 회색사신과 휘하 미니사신의 방위·초월기술·외부위협 대응에 문명의 존속 자체가 의존하게 되므로 주요 운영 주체가 개인 중심으로 전환된다. S(Stasis): 후기 인류 문명의 핵심은 새로운 영역의 적극적인 확장보다 오브젝트와 외부 위협으로부터 기존 문명을 유지하고 생존하는 데 있다.",
 	"nat":[
-	["Ma · Me · St · El · Bi · Mn · Qu · Nu · Ae","작중에서 현대 인류를 크게 벗어난 일반 공학 기술의 세부 수준을 명확히 제시하지 않으므로 현대 인류 수준을 기준으로 보수적으로 평가."]
+	["Ma · Me · St · El · Bi · Qu · Nu · Ae · Mn","작중에서 현대 인류를 크게 벗어난 일반 공학 기술의 세부 수준을 명확히 제시하지 않으므로 현대 인류 수준을 기준으로 보수적으로 평가."]
 	],
 	"ext":[
 	["Sp · Te · Ca-I","공간이동·시간 관련 오브젝트가 존재하지만, 인류가 해당 원리를 독립적인 공학 원리로 이해하고 재현·제어한다는 근거는 부족하다."]
@@ -1246,7 +1289,7 @@ const G=[ {
 	,
 	{
 	"n":"오크 (Orks)","w":"워해머 40,000","t":"게임","pd":[0,1,1,1],"l":[2,3,2,3,3,0,0,0,2,0,0,3,2,0],"img":"","why": {
-	"pdo":"P(Magic): 오크 기술은 설계가 엉성해도 오크가 믿으면 작동하는데, 이는 오크 집단이 만드는 사이킥 장(Waaagh!)이 물리적 불가능성을 메우기 때문이다. 오크가 이름 붙이지 않아도 실제 작동 원리가 이 장이므로 Magic으로 판정한다(총기·차량은 물리 작동도 병행해 P-P, 원리가 불분명해 P-A와 경계). D(Outer): Waaagh!는 군세가 클수록 커지며 전장을 찾아 은하를 가로질러 이동한다. I(Individual): 장비는 Mek 같은 개체 기술자가 만들고, 군세는 가장 큰 Warboss 개인을 중심으로 모인다(Waaagh! 장 때문에 C와 경계하나 군체 의식은 아니다). E(Expansive): 목적이 전쟁 자체이며 성공할수록 세력이 커진다.","nat":[["Ma-II · St-II","고철과 폐기물을 모아 쓰는 수준이라 재료·구조 설계로 보기 어렵다."],["Me-III","Mek이 차량과 거대 병기를 만들고 정비하지만 설계가 엉성하고 믿음에 기대는 부분이 커 III로 둔다. 믿음에 기대는 부분은 Mg에서 평가한다."],["El-III","Kustom force field와 Shokk attack gun 같은 장치를 응용하나 불안정하다."],["Bi-III","Painboy·Mad Dok의 거친 수술과 생체 개조, 스퀴그 사육을 응용한다. 오크의 번식과 성장은 타고난 생태라 기술로 평가하지 않았다."],["Ae-III","Rok, Kroozer 같은 우주선과 항공기를 만들어 운용한다(안정적 재현 근거는 약함)."],["Qu · Nu","독립적인 기술 근거가 없어 —로 표기."]],"ext":[["Sp-II","Teleporta 같은 장치와 Weirdboy의 이동을 사용하지만 안정적이지 않다."],["Mn · Te · Ca","Waaagh!가 위계와 믿음을 퍼뜨리지만 오크가 정보를 설계·제어하지는 않아 Mn은 —로 표기. 시간·인과 기술은 없다."]],"mag":[["Mg-II","Weirdboy가 Waaagh! 에너지를 방출하고 Mek 기술이 이 장에 의존하지만, 오크는 원리를 모르고 제어하지 못한다(Weirdboy가 폭발하기도 함). 사용(II)으로 두며 III과 경계다."]],"ano":[["An","Waaagh!는 사이킥 장이라 Mg에서 평가하며 별도의 이상현상 기술은 없어 —로 표기."]]
+	"pdo":"P(Magic): 오크 기술은 설계가 엉성해도 오크가 믿으면 작동하는데, 이는 오크 집단이 만드는 사이킥 장(Waaagh!)이 물리적 불가능성을 메우기 때문이다. 오크가 이름 붙이지 않아도 실제 작동 원리가 이 장이므로 Magic으로 판정한다(총기·차량은 물리 작동도 병행해 P-P, 원리가 불분명해 P-A와 경계). D(Outer): Waaagh!는 군세가 클수록 커지며 전장을 찾아 은하를 가로질러 이동한다. I(Individual): 장비는 Mek 같은 개체 기술자가 만들고, 군세는 가장 큰 Warboss 개인을 중심으로 모인다(Waaagh! 장 때문에 C와 경계하나 군체 의식은 아니다). E(Expansive): 목적이 전쟁 자체이며 성공할수록 세력이 커진다.","nat":[["Ma-II · St-II","고철과 폐기물을 모아 쓰는 수준이라 재료·구조 설계로 보기 어렵다."],["Me-III","Mek이 차량과 거대 병기를 만들고 정비하지만 설계가 엉성하고 믿음에 기대는 부분이 커 III로 둔다. 믿음에 기대는 부분은 Mg에서 평가한다."],["El-III","Kustom force field와 Shokk attack gun 같은 장치를 응용하나 불안정하다."],["Bi-III","Painboy·Mad Dok의 거친 수술과 생체 개조, 스퀴그 사육을 응용한다. 오크의 번식과 성장은 타고난 생태라 기술로 평가하지 않았다."],["Ae-III","Rok, Kroozer 같은 우주선과 항공기를 만들어 운용한다(안정적 재현 근거는 약함)."],["Qu · Nu","독립적인 기술 근거가 없어 —로 표기."]],"ext":[["Sp-II","Teleporta 같은 장치와 Weirdboy의 이동을 사용하지만 안정적이지 않다."],["Te · Ca · Mn","Waaagh!가 위계와 믿음을 퍼뜨리지만 오크가 정보를 설계·제어하지는 않아 Mn은 —로 표기. 시간·인과 기술은 없다."]],"mag":[["Mg-II","Weirdboy가 Waaagh! 에너지를 방출하고 Mek 기술이 이 장에 의존하지만, 오크는 원리를 모르고 제어하지 못한다(Weirdboy가 폭발하기도 함). 사용(II)으로 두며 III과 경계다."]],"ano":[["An","Waaagh!는 사이킥 장이라 Mg에서 평가하며 별도의 이상현상 기술은 없어 —로 표기."]]
 	}
 	,"src":"출처: BoLS의 Waaagh!·Mekboy 설명과 팬 위키 요약이며 설정 전체를 확인한 것은 아닙니다. 오크 기술이 믿음으로 작동하는지, 오크 고유의 원리인지는 자료마다 달라 Mg와 Me의 경계가 불확실합니다."
 	}
@@ -1297,10 +1340,10 @@ const G=[ {
 	for(let k=2;
 	k<=6;
 	k+=2)el("polygon", {
-	points:ORDER.map((_,i)=>pt(i,R*k/6).join(",")).join(" "),fill:"none",stroke:"var(--line)"
+	points:RO.map((_,i)=>pt(i,R*k/6).join(",")).join(" "),fill:"none",stroke:"var(--line)"
 	}
 	,svg);
-	ORDER.forEach((_,i)=> {
+	RO.forEach((_,i)=> {
 	const [x,y]=pt(i,R);
 	el("line", {
 	x1:cx,y1:cy,x2:x,y2:y,stroke:"var(--line)"
@@ -1309,11 +1352,11 @@ const G=[ {
 	}
 	);
 	el("polygon", {
-	points:ORDER.map((_,i)=>pt(i,R*l[i]/6).join(",")).join(" "),fill:"var(--fill)",stroke:"var(--navy)","stroke-width":2,"stroke-linejoin":"round"
+	points:RO.map((_,i)=>pt(i,R*l[ORDER.indexOf(RO[i])]/6).join(",")).join(" "),fill:"var(--fill)",stroke:"var(--navy)","stroke-width":2,"stroke-linejoin":"round"
 	}
 	,svg);
-	ORDER.forEach((c,i)=> {
-	const f=fields.find(x=>x.c===c),[x,y]=pt(i,R*l[i]/6),[tx,ty]=pt(i,R+14);
+	RO.forEach((c,i)=> {
+	const f=fields.find(x=>x.c===c),[x,y]=pt(i,R*l[ORDER.indexOf(RO[i])]/6),[tx,ty]=pt(i,R+14);
 	el("circle", {
 	cx:x,cy:y,r:3,fill:f.g.c
 	}
@@ -1524,7 +1567,7 @@ const G=[ {
 	x.fillStyle=MU;
 	fit(x,pn,mw,24,"400");
 	x.fillText(pn,tx,272);
-	const cx=600,cy=800,R=320,n=ORDER.length,st=2*Math.PI/n,an=i=>-Math.PI/2+i*st,pt=(i,r)=>[cx+r*Math.cos(an(i)),cy+r*Math.sin(an(i))];
+	const cx=600,cy=800,R=320,n=RO.length,st=2*Math.PI/n,an=i=>-Math.PI/2+i*st,pt=(i,r)=>[cx+r*Math.cos(an(i)),cy+r*Math.sin(an(i))];
 	let ix=0;
 	G.forEach(g=> {
 	const a0=an(ix)-st/2,a1=an(ix+g.f.length-1)+st/2;
@@ -1545,7 +1588,7 @@ const G=[ {
 	k<=6;
 	k++) {
 	x.beginPath();
-	ORDER.forEach((_,i)=> {
+	RO.forEach((_,i)=> {
 	const [a,b]=pt(i,R*k/6);
 	i?x.lineTo(a,b):x.moveTo(a,b)
 	}
@@ -1560,7 +1603,7 @@ const G=[ {
 	x.fillText(RM[k-1],la-2,lb-4)
 	}
 	}
-	ORDER.forEach((_,i)=> {
+	RO.forEach((_,i)=> {
 	const [a,b]=pt(i,R);
 	x.beginPath();
 	x.moveTo(cx,cy);
@@ -1569,7 +1612,7 @@ const G=[ {
 	}
 	);
 	x.beginPath();
-	ORDER.forEach((c2,i)=> {
+	RO.forEach((c2,i)=> {
 	const [a,b]=pt(i,R*(lv[c2]||0)/6);
 	i?x.lineTo(a,b):x.moveTo(a,b)
 	}
@@ -1582,7 +1625,7 @@ const G=[ {
 	x.lineJoin="round";
 	x.stroke();
 	x.textAlign="center";
-	ORDER.forEach((c2,i)=> {
+	RO.forEach((c2,i)=> {
 	const f=fields.find(q=>q.c===c2),col=LC[f.g.id],[a,b]=pt(i,R*(lv[c2]||0)/6),[lx,ly]=pt(i,R+38);
 	x.fillStyle=col;
 	x.beginPath();
@@ -1599,7 +1642,7 @@ const G=[ {
 	}
 	);
 	const cw=1080/7;
-	ORDER.forEach((c2,i)=> {
+	RO.forEach((c2,i)=> {
 	const f=fields.find(q=>q.c===c2),col=LC[f.g.id],x0=60+(i%7)*cw,y0=1250+(i/7|0)*100,w=cw-10;
 	x.globalAlpha=.08;
 	x.fillStyle=col;
@@ -1798,7 +1841,7 @@ const G=[ {
 	mk("h3","",nm);
 	mk("p","w",p.world||"세계관 미지정");
 	mk("p","pc",pdoStr(p.pd));
-	mk("p","tc",ORDER.map((c,i)=>c+"-"+(p.lv[i]?RM[p.lv[i]-1]:"—")).join(" · "));
+	mk("p","tc",RO.map(c=>{const v=p.lv[ORDER.indexOf(c)];return c+"-"+(v?RM[v-1]:"—")}).join(" · "));
 	mk("p","dt","저장 "+new Date(p.t).toLocaleString("ko-KR", {
 	dateStyle:"medium",timeStyle:"short"
 	}
