@@ -755,6 +755,7 @@
 		</div>
 	<div id="tabEx" hidden>
 		<p class="sub">카드를 누르면 아래에 레이더 차트와 패러다임별 판정 근거가 열립니다. 같은 카드를 다시 누르면 닫힙니다.</p>
+		<p class="note" id="exMsg" hidden></p>
 		<div class="pvg" id="exg"></div>
 		<div id="exl"></div>
 	</div>
@@ -1035,7 +1036,7 @@ const G=[ {
 	}
 	);
 	const empty=RO.every(c=>!lv[c]);
-	if(empty) {
+	if(empty&&EXS[0]) {
 	const g=EXS[0].l;
 	el("polygon", {
 	points:RO.map((_,i)=>pt(i,R*g[ORDER.indexOf(RO[i])]/6).join(",")).join(" "),fill:"var(--fill)",stroke:"var(--navy)","stroke-width":2,"stroke-dasharray":"6 4",opacity:.25
@@ -1079,7 +1080,7 @@ const G=[ {
 	);
 	const pc=pdoStr(pd);
 	const pn=AX.map(([t,o],a)=>(pd[a]<0?"—":o[pd[a]].split(" ")[1])).join(" / ");
-	const E=EXS[0],gp=pd.every(v=>v<0),gt=ORDER.every(c=>!lv[c]);
+	const E=EXS[0]||{pd:[0,0,0,0],l:ORDER.map(()=>0)},gp=!!EXS[0]&&pd.every(v=>v<0),gt=!!EXS[0]&&ORDER.every(c=>!lv[c]);
 	$("pdoCode").textContent=gp?`예) ${pdoStr(E.pd)}\n= ${AX.map(([t,o],a)=>o[E.pd[a]].split(" ")[1]).join(" / ")}`:`${pc}\n= ${pn}`;
 	$("pdoCode").classList.toggle("ghost",gp);
 	$("pdoCode").style.whiteSpace="pre-wrap";
@@ -1190,151 +1191,119 @@ const G=[ {
 	$("rtitle").textContent=c?(w?`${c} · ${w}`:c):"기술 프로필 다이어그램"
 	}
 	["world","civ"].forEach(id=>$(id).oninput=title);
-	const EXS=[
-	{
-	"n":"현대 인류 문명","w":"지구 (현실 세계)","t":"현실","pd":[1,0,0,1],"l":[4,5,5,5,4,4,3,4,1,1,1,4,0,0],"img":"","why": {
-	"pdo":"P(Physics): 물리법칙이 근본 원리. I(Inner): 자원과 활동이 지구에 집중. C(Collective): 국가·기업·제도가 핵심 기술을 운용. E(Expansive): 성장과 변화를 지향.","nat":[["Ma-IV","반도체·합금·복합재를 안정적으로 만들지만 임의의 물성을 설계하진 못함(IV~V 경계)."],["Me-V","마이크로미터급 가공·로봇 제어."],["St-V","초고층·장대교를 사양대로 설계·시공."],["El-V","전자기파와 반도체를 정밀 제어."],["Bi-IV","유전자 편집·합성생물학으로 재현하나 생명 전반의 정밀 제어는 아님."],["Qu-III","레이저·MRI·양자센서는 실용, 양자컴퓨터는 아직 오류가 큼(III~IV 경계)."],["Nu-IV","핵분열은 제어하지만 핵융합은 안정 재현 전."],["Ae-IV","궤도·행성탐사를 안정 운용하나 활동 범위는 달과 태양계 내부."]],"ext":[["Mn-IV","정보 전파는 정밀 제어되나 인지 효과는 확률적."],["Sp·Te·Ca-I","상대성이론과 인과 검증 등 이론·관측 수준이며 조작 기술은 없음."]],"mag":[["Mg·An","해당 원리가 없는 세계라 — 로 표기."]],"ano":[["Mg·An","해당 원리가 없는 세계라 — 로 표기."]]
+	/* ===== 예시 자동 감지 =====
+	index.html 과 같은 위치의 examples/ 폴더에 .json 파일을 넣으면 예시 탭에 나타납니다.
+	① 폴더 목록을 보여 주는 서버 → ② GitHub Pages(*.github.io)의 GitHub API → ③ examples/index.json 순서로 시도합니다. */
+	const EXAMPLES_DIR="examples/";
+	const EXAMPLES_REPO="";
+	let EXS=[];
+	const escH=t=>String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+	function normEx(e) {
+	if(!e||typeof e!=="object"||!e.n||!Array.isArray(e.l)||e.l.length!==14||!Array.isArray(e.pd)||e.pd.length!==4)return null;
+	const l=e.l.map(v=>Math.max(0,Math.min(6,Math.round(+v||0))));
+	const pd=e.pd.map((v,a)=>{v=+v;return v>=0&&v<AX[a][1].length?v:0});
+	const w=e.why&&typeof e.why==="object"?e.why:{};
+	const grp=k=>Array.isArray(w[k])?w[k].filter(x=>Array.isArray(x)).map(x=>[escH(x[0]),escH(x[1])]):[];
+	return {n:String(e.n),w:String(e.w||""),t:String(e.t||""),pd,l,img:typeof e.img==="string"?e.img:"",
+	why:{pdo:escH(w.pdo),nat:grp("nat"),ext:grp("ext"),mag:grp("mag"),ano:grp("ano")},src:escH(e.src)}
 	}
-	,"src":"문서에 분야별 I~VI 세부 기준이 없어 공통 단계 정의로 판단한 값입니다. 경계 분야는 수정해서 쓰세요."
+	const jsonName=n=>/\.json$/i.test(n)&&!/^[_.]/.test(n)&&n.toLowerCase()!=="index.json";
+	const base=()=>new URL(EXAMPLES_DIR,document.baseURI);
+	async function listDir() {
+	const r=await fetch(base(),{cache:"no-store"});
+	if(!r.ok||!/html/i.test(r.headers.get("content-type")||""))return null;
+	const d=new DOMParser().parseFromString(await r.text(),"text/html");
+	const names=[...d.querySelectorAll("a[href]")].map(a=>a.getAttribute("href").split(/[?#]/)[0]).filter(h=>/\.json$/i.test(h)).map(h=>decodeURIComponent(h.split("/").pop()));
+	return names.length?{names}:null
 	}
-	,
-	{
-	"n":"록솔란 제국","w":"가지 않은 길 (해리 터틀도브)","t":"소설","pd":[1,1,0,1],"l":[2,2,2,0,2,2,0,0,4,0,0,4,0,0],"img":"","why": {
-	"pdo":"P(Physics): 초광속 항행·중력조작을 물리 원리로 발견해 사용(인류도 언제든 재현할 만큼 단순한 원리로 묘사). O(Outer): 별에서 별로 식민지를 넓히는 정복·확장. C(Collective): 함대와 군 위계가 운용하는 제국. E(Expansive): 정복 전쟁으로 신민과 영토를 늘리는 것이 목적.","nat":[["Ae-IV","성간 항해와 행성 강하를 반복 수행하나 함선 자체는 청동·황동 수준."],["Ma-II · Me-II · St-II","강철·청동·황동, 화승총·화포·화약병·비행선 등 15~17세기 수준(Ma·Me는 II~III 경계)."],["Bi-II","소형 생물(루오프)을 대기 조사에 사용(근거가 적음)."],["El · Qu · Nu · Te · Ca · Mg · An","전파통신에 응답하지 못하는 등 작중 근거가 없거나 부재해 —로 표기."]],"ext":[["Sp-IV","중력조작·초광속 항행을 함대 규모로 반복 운용(정밀 제어의 근거는 없음). 정의서에 Gr 축이 없어 중력조작은 공간 조작(Sp)으로 판단."],["Mn-II","첫인상을 야만적으로 보이게 하는 공포 전술을 의도적으로 사용(I~II 경계)."],["El · Qu · Nu · Te · Ca · Mg · An","전파통신에 응답하지 못하는 등 작중 근거가 없거나 부재해 —로 표기."]],"mag":[["El · Qu · Nu · Te · Ca · Mg · An","전파통신에 응답하지 못하는 등 작중 근거가 없거나 부재해 —로 표기."]],"ano":[["El · Qu · Nu · Te · Ca · Mg · An","전파통신에 응답하지 못하는 등 작중 근거가 없거나 부재해 —로 표기."]]
+	function ghInfo() {
+	let owner,repo,parts;
+	if(EXAMPLES_REPO.includes("/"))[owner,repo]=EXAMPLES_REPO.split("/"),parts=[];
+	else {
+	const h=location.hostname;
+	if(!/\.github\.io$/i.test(h))return null;
+	owner=h.split(".")[0];
+	const seg=location.pathname.split("/").filter(Boolean).map(decodeURIComponent);
+	if(seg.length&&!/\.html?$/i.test(seg[0]))repo=seg[0],parts=seg.slice(1);
+	else repo=owner+".github.io",parts=seg
 	}
-	,"src":"출처: 해리 터틀도브 단편 〈가지 않은 길〉(1985)의 위키 요약(나무위키·위키백과). 원문 전체를 확인한 것은 아닙니다. 작중 표기는 '록솔란'입니다."
+	const dir=parts.filter(x=>!/\.html?$/i.test(x)).join("/");
+	return {owner,repo,path:[dir,EXAMPLES_DIR.replace(/\/+$/,"")].filter(Boolean).join("/")}
 	}
-	,
-	{
-	"n":"인류 문명 (서울 오브젝트 이야기)",
-	"w":"서울 오브젝트 이야기 (논리곰)",
-	"t":"소설",
-	"pd":[2,0,1,0],
-	"l":[4,5,5,5,4,4,3,4,1,1,1,4,1,3],
-	"img":"",
-	"why": {
-	"pdo":"A(Anomaly): 오브젝트는 단순히 아직 과학적으로 밝혀지지 않은 현상이 아니라, 기존의 물리법칙이나 마법적 규칙으로 환원되지 않는 이상현상으로 작동하며 문명의 생존과 기술적 대응이 이러한 오브젝트의 존재를 전제로 이루어진다. I(Inner): 인류의 주요 활동과 생존 기반은 서울을 비롯한 기존 도시권에 집중되어 있다. I(Individual): 초기에는 연구소·협회·기업·국가 등 집단이 오브젝트와 기술을 운용하지만, 후기에는 회색사신과 휘하 미니사신의 방위·초월기술·외부위협 대응에 문명의 존속 자체가 의존하게 되므로 주요 운영 주체가 개인 중심으로 전환된다. S(Stasis): 후기 인류 문명의 핵심은 새로운 영역의 적극적인 확장보다 오브젝트와 외부 위협으로부터 기존 문명을 유지하고 생존하는 데 있다.",
-	"nat":[
-	["Ma · Me · St · El · Bi · Qu · Nu · Ae · Mn","작중에서 현대 인류를 크게 벗어난 일반 공학 기술의 세부 수준을 명확히 제시하지 않으므로 현대 인류 수준을 기준으로 보수적으로 평가."]
-	],
-	"ext":[
-	["Sp · Te · Ca-I","공간이동·시간 관련 오브젝트가 존재하지만, 인류가 해당 원리를 독립적인 공학 원리로 이해하고 재현·제어한다는 근거는 부족하다."]
-	],
-	"mag":[
-	["Mg-—","인류가 마법적 규칙을 기술 체계의 기반으로 삼는다는 근거가 없다."]
-	],
-	"ano":[
-	["An-III","오브젝트의 특성을 조사·기록하고, 격리·응용·제조에 활용하는 사례가 존재한다. 다만 개별 오브젝트의 작동 원리를 완전히 통제하거나 근본적으로 개변하는 수준은 확인되지 않는다."]
-	]
+	async function listGh() {
+	const g=ghInfo();
+	if(!g)return null;
+	const r=await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}/contents/${g.path.split("/").map(encodeURIComponent).join("/")}`,{headers:{Accept:"application/vnd.github+json"}});
+	if(!r.ok)return null;
+	const a=await r.json(),raw={};
+	if(!Array.isArray(a))return null;
+	a.filter(f=>f.type==="file").forEach(f=>raw[f.name]=f.download_url);
+	return {names:Object.keys(raw),raw}
 	}
-	,
-	"src":"서울 오브젝트 이야기의 인류 문명을 작품의 진행에 따른 변화까지 고려하여 평가한 예시. Principle은 오브젝트의 실제 작동 원리를 기준으로 Anomaly로 판정한다. Operator는 초기에 집단 중심이지만 후기에는 회색사신과 휘하 미니사신에 문명의 존속과 핵심 대응 능력이 의존하는 점을 반영해 Individual로 판정한다."
+	async function listManifest() {
+	const r=await fetch(new URL("index.json",base()),{cache:"no-store"});
+	if(!r.ok)return null;
+	const m=await r.json(),a=Array.isArray(m)?m:m.files;
+	return Array.isArray(a)?{names:a.map(String)}:null
 	}
-	,
-	{
-	"n":"인류 문명","w":"회귀도 13번이면 지랄맞다","t":"소설","pd":[0,0,0,0],"l":[4,4,4,4,3,3,0,0,0,0,0,3,4,0],"img":"","why": {
-	"pdo":"P(Magic): 지구 문명이 바벨과 헌터 등 초상적 현상을 전제로 생존함. I(Inner): 인류의 활동 무대와 대응 체계가 지구 및 바벨의 침공에 집중. C(Collective): 헌터와 조직·세력이 집단적으로 대응. S(Stasis): 문명의 기본 목표는 바벨의 침공과 반복되는 멸망을 견디고 인류를 보존하는 것.","nat":[["Ma-IV · Me-IV · St-IV · El-IV","지구의 현대 산업 기반을 전제로 함."],["Bi-III · Mn-III","인간의 신체능력·정보전 및 사회적 조직은 존재하지만, 생명·인지 자체를 공학적으로 정밀 제어한다는 근거는 부족함."],["Ae-III","현대 지구의 항공 기술을 사용하지만 성간 항행이나 고도 우주공학이 문명 기술로 제시되지는 않음."],["Qu · Nu · Sp · Te · Ca · An","인류가 해당 원리를 독립적인 공학기술로 재현·제어한다는 근거가 부족해 —로 보류. 바벨과 던전은 인류가 만든 기술이 아니라 침공·초월적 시스템의 일부이므로 인간 문명의 Sp/An 수준으로 직접 환산하지 않음."]],"ext":[["Bi-III · Mn-III","인간의 신체능력·정보전 및 사회적 조직은 존재하지만, 생명·인지 자체를 공학적으로 정밀 제어한다는 근거는 부족함."],["Qu · Nu · Sp · Te · Ca · An","인류가 해당 원리를 독립적인 공학기술로 재현·제어한다는 근거가 부족해 —로 보류. 바벨과 던전은 인류가 만든 기술이 아니라 침공·초월적 시스템의 일부이므로 인간 문명의 Sp/An 수준으로 직접 환산하지 않음."]],"mag":[["Mg-IV","헌터·마법적 능력이 실제 전투와 던전 공략에 반복적으로 응용되지만, 그 근본 원리를 인류가 개변하는 단계는 확인되지 않음."]],"ano":[["Qu · Nu · Sp · Te · Ca · An","인류가 해당 원리를 독립적인 공학기술로 재현·제어한다는 근거가 부족해 —로 보류. 바벨과 던전은 인류가 만든 기술이 아니라 침공·초월적 시스템의 일부이므로 인간 문명의 Sp/An 수준으로 직접 환산하지 않음."]]
+	async function getJson(name,raw) {
+	let r=await fetch(new URL(encodeURIComponent(name),base()),{cache:"no-store"});
+	if(!r.ok&&raw&&raw[name])r=await fetch(raw[name]);
+	if(!r.ok)throw new Error(name);
+	return r.json()
 	}
-	,"src":"확인 가능한 공개 자료에서는 작품이 지구의 현대 사회를 배경으로 하고, 바벨에서 비롯된 던전과 헌터들이 인류 멸망의 핵심 요소로 설명됩니다. 작품의 상세 기술 설정을 충분히 공개한 1차 자료는 검색에서 확인하지 못했으므로, 확인되지 않은 초월기술은 점수에 넣지 않았습니다."
+	function exMsg(t) {
+	const m=$("exMsg");
+	m.hidden=!t;
+	m.textContent=t||""
 	}
-	,
-	{
-	"n":"인류 문명","w":"나 혼자만 레벨업","t":"웹소설/웹툰","pd":[0,0,0,0],"l":[4,4,4,4,3,3,0,0,0,0,0,3,2,0],"img":"","why": {
-	"pdo":"P(Magic): 현대 인류 사회가 게이트·마수·마나와 헌터를 전제로 존속함. I(Inner): 문명 활동의 중심은 지구와 게이트/던전이며, 인류 자체의 외부 우주 확장이 중심이 아님. C(Collective): 헌터 협회·길드·각국 정부가 헌터와 게이트를 조직적으로 관리. S(Stasis): 본편의 인류 문명은 몬스터와 군주 전쟁으로부터 생존하는 것이 핵심.","nat":[["Ma-IV · Me-IV · St-IV · El-IV","현대 지구의 산업·공학 수준을 기반으로 함."],["Bi-III · Mn-III","의료·사회정보 체계는 현대 수준을 기반으로 하며, 초인 능력 자체를 생명공학이나 인지공학으로 재현한다는 근거는 없음."],["Ae-III","현대 항공 기술을 운용하지만 인류가 초월적 비행·우주항행을 기술적으로 정복한 것은 아님."],["Qu · Nu · Sp · Te · Ca · An","인류가 독립적인 공학기술로 재현·제어한다는 근거가 없어 —로 보류. 특히 게이트는 인류가 개발한 공간공학이 아니라 Rulers가 인간 세계에 마나를 유입시키기 위해 만든 현상이며, 인간의 Sp 기술 수준으로 환산하지 않음."]],"ext":[["Bi-III · Mn-III","의료·사회정보 체계는 현대 수준을 기반으로 하며, 초인 능력 자체를 생명공학이나 인지공학으로 재현한다는 근거는 없음."],["Qu · Nu · Sp · Te · Ca · An","인류가 독립적인 공학기술로 재현·제어한다는 근거가 없어 —로 보류. 특히 게이트는 인류가 개발한 공간공학이 아니라 Rulers가 인간 세계에 마나를 유입시키기 위해 만든 현상이며, 인간의 Sp 기술 수준으로 환산하지 않음."]],"mag":[["Mg-II","인간 헌터가 마나에 의해 초능력과 마법적 능력을 사용하고, 마법 무기·포션 등 관련 물품도 존재하지만 마나의 근본 원리를 인류가 제어·개변하는 기술은 아님."]],"ano":[["Qu · Nu · Sp · Te · Ca · An","인류가 독립적인 공학기술로 재현·제어한다는 근거가 없어 —로 보류. 특히 게이트는 인류가 개발한 공간공학이 아니라 Rulers가 인간 세계에 마나를 유입시키기 위해 만든 현상이며, 인간의 Sp 기술 수준으로 환산하지 않음."]]
+	function homeUpdate() {
+	const c=$("homeSvg").parentElement;
+	if(!EXS[0]) {
+	c.hidden=true;
+	return
 	}
-	,"src":"본편 기준. 공개 설정상 게이트가 인간 세계와 다른 차원을 연결하고, 헌터는 각성 시 마나에 의해 초인적 능력을 얻으며, Rulers가 인간 세계에 마나를 유입시키기 위해 게이트를 만들었다고 설명됩니다. 따라서 초월적 존재의 능력을 인간 문명의 기술 수준으로 직접 환산하지 않았습니다."
+	c.hidden=false;
+	$("homeSvg").innerHTML="";
+	mini($("homeSvg"),EXS[0].l);
+	$("homeCap").textContent=EXS[0].n+" 예시 · "+pdoStr(EXS[0].pd)
 	}
-	,
-	{
-	"n":"테라 문명","w":"명일방주","t":"게임","pd":[0,0,0,0],"l":[5,5,5,5,5,4,3,3,3,2,2,3,5,1],"img":"","why": {
-	"pdo":"P(Magic): 테라 문명은 Originium과 Arts를 규칙이 있는 체계로 보고 산업·의료·전투에 반복 응용한다. 오리지늄이 선인류가 만든 정보 압축형 테라포밍 장치라는 사실은 문명 전체가 이해하는 수준이 아니므로, 문명이 실제로 다루는 원리 기준으로 Magic으로 판정한다(원리가 밝혀져 재현되면 5.1에 따라 재분류 가능). I(Inner): 활동과 생존이 테라 안의 국가·이동도시·Catastrophe 환경에 집중된다. C(Collective): 국가·기업·군사조직이 기술과 Arts를 운용한다. S(Stasis): 재앙과 광석병 속에서 생존·사회 유지가 중심 과제다.","nat":[["Ma-V · Me-V · St-V · El-V","이동도시를 움직이는 오리지늄 엔진과 나노 수준 기술까지 안정적으로 운용한다."],["Bi-V","합성 생물인 키메라를 낼 만큼 생명공학이 발달했으나 생명의 근본 특성에 개입하는 VI는 아니다."],["Qu-III · Nu-III","독립적인 문명 핵심축이라고 볼 직접 근거가 부족하다."],["Ae-III","항공 기술은 있지만 우주항행 문명이 아니다."]],"ext":[["Mn-IV","정보·문화의 조직적 운용은 가능하지만 인지 결과를 정밀하게 보장하는 수준은 아니다."],["Sp-III","공간 계열 Arts 같은 개별 현상은 있으나 공학적으로 재현·양산한다는 근거는 약하고, 스타게이트나 차단층 돌파는 선인류 유산에 의존한다."],["Te-II · Ca-II","선인류 유물(시간 제어 기계, PRTS 등)을 사용한 사례는 있으나 스스로 재현하지 못한다."]],"mag":[["Mg-V","Arts와 Originium을 규격화된 기술체계로 반복 사용하지만 현생 문명이 오리지늄 자체를 완전히 이해하지는 못해 IV~V 경계다."]],"ano":[["An-I","Catastrophe와 시테러 같은 정체불명 현상을 관측·연구하지만 기술 기반으로 쓰지는 못한다."]]
+	async function loadExamples() {
+	exMsg("예시를 불러오는 중…");
+	let found=null;
+	for(const fn of [listDir,listGh,listManifest]) {
+	try {
+	const r=await fn();
+	if(r&&r.names.some(jsonName)) {
+	found=r;
+	break
 	}
-	,"src":"출처: 명일방주 설정을 요약한 나무위키 문서(설정·오리지늄·종족)이며 게임 본편 전체를 확인한 것은 아닙니다. 본편 시점 기준이고, 엔드필드 시점에서는 스타게이트와 탈로스-II 개척으로 D-O·O-E 쪽으로 이동하므로 별도 평가가 필요합니다. 분야별 세부 기준이 없어 공통 단계 정의로 판단한 값입니다."
 	}
-	,
-	{
-	"n":"선인류 문명 (멸망 이전)","w":"명일방주 (선인류)","t":"게임","pd":[1,1,0,1],"l":[5,5,5,5,5,6,4,4,5,5,4,5,0,1],"img":"","why": {
-	"pdo":"P(Physics): SST 초공간도약과 엔트로피 역전 스타게이트는 새로운 물리·이론 원리로 설명되는 기술이라 Sp·Te 등 해당 분야로 평가하고, 세계 원리는 Physics로 둔다(관찰자는 이상현상이지만 선인류 기술의 기반은 아니다). O(Outer): 우주를 아우르던 성간 문명이며 탈로스-II 식민지와 테라 테라포밍을 추진했다. C(Collective): 연구기관과 프로젝트 단위로 운용된다(박사·프리스티스 같은 핵심 개인이 두드러져 O-I와 경계). E(Expansive): 전성기에는 개척·테라포밍을 지향했고, 멸망 직전에는 보존(S) 쪽으로 기울었다.","nat":[["Ma-V · Me-V · St-V · El-V","달 크기 인공구조물, 워프 엔진과 고에너지 코어, 오리지늄을 크게 웃도는 석관 에너지를 갖췄다. 물질의 데이터화 실험(안면교)은 결과가 좋지 않았으나 후속 연구의 바탕이 되었고, VI는 보류했다."],["Bi-V","생물방주(퍼스트본), 석관의 신체 복원, 인공 생명체 AMa-10을 만들었으나 오리지늄에 의한 신인류 진화는 의도하지 않은 결과라 VI는 아니다."],["Qu-IV · Nu-IV","소립자 수준 반전 대칭을 항성 질량 천체에 적용한 서술이 있으나 IF 스토리에서 나온 것이고, 양자·핵 분야를 따로 확정할 근거가 부족해 보수적으로 둔다."],["Ae-V","SST 가능 함선으로 성간 항해를 운용했다."]],"ext":[["Mn-VI","린치핀(마인드 패턴 각인), 안세타(메타 문자 번역), 변론(사고 공명), PCS(인격·인지 동기화), 인간 의식을 AI와 동조시킨 보존자까지 의식과 정체성의 경계에 직접 개입한다(V~VI 경계)."],["Sp-V · Te-V","SST를 보편적으로 쓰고 엔트로피 역전 스타게이트로 좌표를 고정한 성간 연결을 구축했다. 시간은 PRTS의 시간 정지·가속과 시간 제어 기계처럼 범위가 한정된 제어라 VI는 보류했다."],["Ca-IV","PRTS의 현실 개변 장치 같은 서술은 있으나 코드명 기반 추정이라 보수적으로 둔다."]],"mag":[["Mg-—","마법에 기반한 기술은 없다."]],"ano":[["An-I","관찰자를 이해할 수 없는 존재로 인식하고 차단층으로 시선을 피하려 했으나 이해와 제어에는 실패했다."]]
+	catch(err) {}
 	}
-	,"src":"출처: 나무위키 '인간(명일방주)' 선인류 항목과 오리지늄·박사 문서, 중국 서버 시나리오 번역 요약이며 원작 전체를 확인한 것은 아닙니다. 선인류는 박사를 제외하면 사실상 멸종했으므로 멸망 이전 문명을 평가했고, 스타게이트 관련 일부는 IF 스토리 서술이 섞여 확정값이 아닙니다."
+	if(!found) {
+	exMsg(location.protocol==="file:"?"파일을 직접 열면(file://) 브라우저가 예시 파일을 읽지 못합니다. GitHub Pages나 로컬 서버(예: python -m http.server)로 열어 주세요.":"examples 폴더에서 예시 파일(.json)을 찾지 못했습니다. index.html과 같은 위치에 examples 폴더를 두고 JSON 파일을 넣어 주세요.");
+	homeUpdate();
+	render();
+	return
 	}
-	,
-	{
-	"n":"도시 문명","w":"림버스 컴퍼니","t":"게임","pd":[2,0,0,0],"l":[4,5,5,5,4,4,3,3,5,5,2,2,0,5],"img":"","why": {
-	"pdo":"P(Anomaly): 각 Wing의 Singularity는 물리법칙을 무시하는 특허 기술이며, 근원이 L Corp의 Cogito(인간 정신의 물질화)와 Abnormality, K Corp의 눈물 생물처럼 물리나 마법으로 환원되지 않는 존재와 개념에 있다. 문명이 마법이라 부르지도 않고 물리로 설명되지도 않으므로 P-A로 판정한다(Sp·Te 등 새 원리로 설명되는 부분은 해당 분야로 따로 평가하며 P-P와 경계). I(Inner): 26개 District의 Nest와 Backstreets 중심의 도시국가이고 외부 확장 근거는 약하다. C(Collective): Wings·Head·Associations가 기술과 사회를 운용한다(Fixers 개인의 힘이 커서 O-I와 경계). S(Stasis): Head가 금기와 특허를 관리하며 도시 질서를 유지하는 쪽이다(Wings 간 경쟁이 치열해 E와 경계).","nat":[["Ma-IV · Me-V · St-V · El-V","Singularity 의존분을 빼면 일반 공학 축의 직접 근거가 간접적이라 현대 인류와 같은 수준으로 계상한다."],["Bi-IV · Mn-IV","치유·복제 계열은 Singularity 기반이라 An에서 따로 보고, 일반 생명공학과 정보·감시망은 보수적으로 둔다."],["Qu-III · Nu-III · Ae-II","직접 근거가 없어 낮게 가정했고 우주항행 근거는 없다."]],"ext":[["Bi-IV · Mn-IV","치유·복제 계열은 Singularity 기반이라 An에서 따로 보고, 일반 생명공학과 정보·감시망은 보수적으로 둔다."],["Sp-V","W Corp의 순간이동·워프 열차, P Corp의 공간 탄성처럼 공간 계열 Singularity가 상용화되어 있다."],["Te-V","T Corp의 TimeTrack은 국지적 시간 가속·감속·정지·되감기와 루프를 수행하고 시간을 포장·징수해 화폐처럼 쓰지만, 완전한 시간 조작은 아니라 V~VI 경계로 보고 VI는 보류했다."],["Ca-II","J·F Corp의 개념 잠금·해제처럼 개념 영역에 접근하나 인과 자체를 대상으로 한다는 명시는 부족하다."]],"mag":[["Mg-—","마법에 기반한 기술은 없다."]],"ano":[["An-V","Abnormality에서 Enkephalin을 추출해 도시 에너지로 쓰고, Singularity를 특허·규제·버전 관리하며 상용화한다. 다만 L Corp의 Abnormality 관리는 탈주 사고가 반복되어 IV~V 경계이고, 이상현상의 근원 자체에 개입한다는 근거는 없어 VI는 보류했다."]]
+	const names=found.names.filter(jsonName).sort((a,b)=>a.localeCompare(b,"ko",{numeric:true}));
+	const got=await Promise.all(names.map(n=>getJson(n,found.raw).then(j=>({n,j}),()=>({n,j:null}))));
+	const bad=[];
+	got.forEach(({n,j})=> {
+	const list=Array.isArray(j)?j:[j],ok=list.map(normEx).filter(Boolean);
+	if(!j||!ok.length)bad.push(n);
+	ok.forEach(e=> {
+	EXS.push(e);
+	addExample(e)
 	}
-	,"src":"출처: 위키피디아(Limbus Company, Library of Ruina, Lobotomy Corporation), 프로젝트 문 팬위키, 나무위키 Wings 문서 요약이며 작품 전체를 확인한 것은 아닙니다. Singularity의 근원이 모두 공식적으로 밝혀진 것은 아닙니다."
+	)
 	}
-	,
-	{
-	"n":"테라 문명 (엔드필드 시점)","w":"명일방주: 엔드필드","t":"게임","pd":[0,1,0,1],"l":[5,5,5,5,5,4,3,3,4,2,2,4,5,3],"img":"","why": {
-	"pdo":"P(Magic): 오리지늄과 Arts를 규칙 있는 체계로 응용하는 점은 본편과 같고, 선인류 문명의 존재가 널리 알려졌지만 원리가 물리나 다른 공학으로 완전히 해명·재현되었다는 근거는 없어 Magic으로 둔다(프로토콜 오리지늄이 해명되면 5.1에 따라 Sp 등으로 재분류 가능). O(Outer): 스타게이트를 복원해 탈로스 II를 발견·개척한 개척 문명이다. C(Collective): 탈로스 II 상업연합회, 홍산 과학원, 연맹 공단 같은 단체가 문명 밴드와 엔드필드 공업을 꾸린다(관리자 개인의 비중이 커 O-I와 경계). E(Expansive): 개척과 재건, 스타게이트 탈환이 목표다.","nat":[["Ma-V · Me-V · St-V · El-V","오리지늄 융합로로 구동하는 통합 공업 시스템이 황무지에 전력·생산·운반 플랫폼을 원격 자동 전개하고, 프로토콜 무선 전력 공급과 궤도의 제강호까지 운용한다."],["Bi-V","석관 Mk.2를 역설계해 실용화했고 본편보다 생명 보존·복원 기술이 진전되었으나, 선인류 자체의 기술을 넘지는 못해 IV~V 경계다."],["Qu-III · Nu-III","직접 근거가 부족해 낮게 두었다(오리지늄 융합로의 '융합'이 핵융합인지는 확인하지 못했다)."],["Ae-IV","궤도 구조물(제강호)을 올려 운용하지만 행성 간 이동은 스타게이트에 의존한다."]],"ext":[["Mn-IV","프로토콜 네트워크로 탈로스 II 각지의 정보와 시설을 연결하지만 인지 효과를 정밀하게 다루는 근거는 부족하다."],["Sp-IV","프로토콜 오리지늄은 오리지늄과 초자연의 상호작용을 이용해 무게와 부피를 따지지 않는 원거리 이송을 구현하고, 복원한 스타게이트로 안정적 연결을 유지한다. 다만 스타게이트 자체는 선인류 유산이고 정밀 제어까지는 확인되지 않아 IV~V 경계다."],["Te-II · Ca-II","엔트로피 역전 원리를 스스로 재현한 근거는 없다."]],"mag":[["Mg-V","Arts와 프로토콜 오리지늄을 반복 응용·재현한다. 최초의 오리지늄이 개념적으로 손상되었다는 서술이 있어 근본 원리 개입(VI)은 아니다."]],"ano":[["An-III","초자연(에테르사이드)과 침식, 아겔로스는 알 수 없는 기원의 이상현상으로 다뤄지며, 이를 이용한 프로토콜 기술을 실용화했다. 다만 침식을 안정적으로 재현·제어하지는 못하고 대응이 계속 뒤따르는 단계다."]]
+	);
+	exMsg(bad.length?`형식이 맞지 않아 건너뛴 파일 ${bad.length}개: ${bad.join(", ")}`:EXS.length?"":"읽을 수 있는 예시가 없습니다.");
+	homeUpdate();
+	render()
 	}
-	,"src":"출처: 나무위키 '명일방주: 엔드필드' 설정·설비 문서와 팬 정리글(2026년 7월 기준)이며 게임 전체를 확인한 것은 아닙니다. 엔드필드는 서비스 중이라 이후 스토리에서 값이 바뀔 수 있습니다. 본편 시점 항목과 별도로 평가했고, 비교하면 Sp·Ae·An이 올랐고 D·O가 Outer·Expansive로 바뀌었습니다."
-	}
-	,
-	{
-	"n":"시본 (Seaborn)","w":"명일방주","t":"게임","pd":[1,1,0,1],"l":[0,0,2,0,6,4,0,0,0,0,0,0,0,0],"img":"","why": {
-	"pdo":"P(Physics): 시본은 선인류가 생명공학으로 설계한 Firstborn의 후손이며, 진화·변이·Sea Terror 번식과 소환 같은 능력은 모두 설계된 생물학적 능력으로 본다. 마법적 규칙으로 체계화된 현상이 아니므로 P-P로 판정한다(Feranmut에 비견되는 힘이라는 서술이 있어 P-M과 경계). O(Outer): 둥지(Nest)를 연안과 도시로 퍼뜨려 육지 문명을 잠식하는 분산·확장형이다(심해에 밀집한 군체라 I와 경계). C(Collective): '우리 다수(We Many)'라 불리는 군체 의식이 집단 목표를 공유한다(Ishar'mla·Mártus 같은 개체의 영향이 커서 O-I와 경계). E(Expansive): 궁극 목표는 종족의 생존이지만 수단이 끊임없는 진화·동화·침공이라 확장·변화 쪽으로 판정했다(S와 경계).","nat":[["Ma · Me · El · Qu · Nu · Ae","시본이 재료·기계·전기·양자·핵·항공우주 기술을 개발해 쓴다는 근거가 없어 —로 표기. 날아다니는 Sea Terror는 동물처럼 행동하는 개체이므로 비행한다는 결과만으로 Ae에 넣지 않는다(5장 판정 원칙). 훗날 우주로 떠난다는 전망은 팬 위키의 전망 서술이라 현재 능력으로 보지 않았다."],["St-II","둥지를 짓고 확장하며 도시 하나를 통째로 둥지로 바꾸지만, 설계·시공 체계라기보다 서식 행동에 가깝다. 규모가 아니라 기술 도달로 판정하므로 사용(II)으로 둔다(근거 약함)."],["Bi-VI","시본은 필요에 따라 자신들의 생물 구조 자체를 변화시키며 진화하는 종족이다. 다른 생명체를 흡수해 진화하고(Endspeaker가 Amaia를 삼키고 진화), 사람을 시본으로 변이시키며, Sea Terror 같은 후손을 번식시키고, Aegir의 Class III 무기에 내성을 갖출 만큼 적응한다. 이는 선인류가 설계한 생물학적 능력이다. 현대 인류식 공학 방법은 아니지만 TT6는 방식이 아니라 도달 범위를 평가하므로, 생명의 구조와 작동 조건에 직접 개입하는 개변(VI)으로 판정한다."]],"ext":[["Mn-IV","군체 의식 We Many로 정보를 공유하고, 삼킨 존재의 기억과 의식 일부를 계승한다. Ishar'mla가 Mártus에게 환영을 보여 Church of the Deep을 낳게 했듯 인지적 전파도 일으키지만, 정밀 제어라기보다 본능적·확률적 작용이라 V는 보류했다."],["Sp · Te · Ca","공간·시간·인과를 직접 조작한다는 근거가 없어 —로 표기. 대침묵(Profound Silence)은 시본이 일으킨 사건의 이름이며 기술 능력이 아니고, 교신이 끊겼다는 결과의 유사성으로 분야를 판정하지 않는다."]],"mag":[["Mg","시본의 능력은 선인류가 설계한 생물학적 능력이고 마법적 현상과 규칙을 기술 기반으로 삼는 체계가 없어 —로 표기."]],"ano":[["An","'위에서 오는 위협'의 환영을 받았지만 이를 관측·이론화하거나 기술 기반으로 삼는다는 근거는 없어 —로 표기."]]
-	}
-	,"src":"출처: Arknights Terra Wiki(Seaborn, Firstborn, Ishar'mla, Church of the Deep, Path of Life 문서) 요약이며 게임 전체를 확인한 것은 아닙니다. 공식 한국어 명칭을 확인하지 못해 고유명사는 영어로 표기했습니다. 시본은 공학 문명이라기보다 군체 종족이라 대부분의 공학 분야가 —이고, 값은 '무엇을 어디까지 할 수 있는가' 기준의 추정입니다. 이후 스토리에서 바뀔 수 있습니다."
-	}
-	,
-	{
-	"n":"인류제국 (Imperium of Man)","w":"워해머 40,000","t":"게임","pd":[1,1,0,0],"l":[4,4,4,4,4,3,0,4,4,0,0,4,3,0],"img":"","why": {
-	"pdo":"P(Physics): 인류제국의 기술 기반은 STC에서 이어진 공학이며, 의식처럼 다루지만 작동 원리는 물리적이다. Warp 항행과 사이킥은 Sp·Mg에서 따로 평가한다(P-M과 경계). D(Outer): 수많은 세계를 거느린 은하 규모의 제국이다. C(Collective): Adeptus Mechanicus, Ecclesiarchy 같은 기관이 기술과 사회를 운용한다. S(Stasis): 약 1만 년 동안 기술이 거의 정체되었고 STC 회수와 수호에 집중한다(대원정의 확장 지향이 남아 E와 경계).","nat":[["Ma-IV · Me-IV · St-IV · El-IV","STC 설계도로 전차·거대 요새·보이드 쉴드 등을 반복 생산하지만 새 설계보다 보존된 설계도에 의존한다. 설계도를 잃으면 재현하지 못해 IV로 둔다(III~IV 경계)."],["Bi-IV","Space Marine 유전종자, 클론, 서보 같은 생체 개조를 재현하나 원형 유전종자에 의존한다."],["Nu-IV","플라즈마 반응로와 핵 계열 병기를 운용하지만 플라즈마 병기가 불안정한 사례가 많아 III~IV 경계다."],["Ae-IV","보이드 선단과 궤도 작전을 상시 운용한다. 성간 항행의 핵심인 Warp 항행은 Sp에서 따로 평가한다."],["Qu","양자 기술을 독립 분야로 다룬다는 근거가 없어 —로 표기."]],"ext":[["Mn-III","교회와 행정 기관이 교리와 정보를 제국 전체에 퍼뜨리지만 인지 효과를 정밀하게 제어하지는 못한다."],["Sp-IV","Warp 엔진, Gellar Field, Navigator로 성간 도약을 상시 운용한다. 폭풍과 항법 오차로 실패가 잦아 정밀 제어(V)는 아니다."],["Te · Ca","시간·인과를 조작하는 기술이 없어 —로 표기."]],"mag":[["Mg-III","Astropath, Navigator, Sanctioned psyker 제도로 사이킥 능력을 통신과 항법에 반복 응용한다(Navigator는 Warp 항행과 Sp에 겹침). 개체의 재능과 위험 때문에 완전한 규칙 체계로 쓰이지는 않아 III."]],"ano":[["An","Chaos와 Warp 존재는 사이킥·Warp 현상으로 보아 Mg에서 평가한다. 이상현상 자체를 기술 기반으로 삼는 체계가 없어 —로 표기."]]
-	}
-	,"src":"출처: Warhammer 40k Wiki와 BoLS의 STC·Dark Age of Technology 요약이며 설정 전체를 확인한 것은 아닙니다. 에디션과 시기에 따라 설정이 다르며, 제국 교회(Imperial Cult)·Astartes 같은 세부는 일반 설정 지식으로 판단했습니다."
-	}
-	,
-	{
-	"n":"오크 (Orks)","w":"워해머 40,000","t":"게임","pd":[0,1,1,1],"l":[2,3,2,3,3,0,0,0,2,0,0,3,2,0],"img":"","why": {
-	"pdo":"P(Magic): 오크 기술은 설계가 엉성해도 오크가 믿으면 작동하는데, 이는 오크 집단이 만드는 사이킥 장(Waaagh!)이 물리적 불가능성을 메우기 때문이다. 오크가 이름 붙이지 않아도 실제 작동 원리가 이 장이므로 Magic으로 판정한다(총기·차량은 물리 작동도 병행해 P-P, 원리가 불분명해 P-A와 경계). D(Outer): Waaagh!는 군세가 클수록 커지며 전장을 찾아 은하를 가로질러 이동한다. I(Individual): 장비는 Mek 같은 개체 기술자가 만들고, 군세는 가장 큰 Warboss 개인을 중심으로 모인다(Waaagh! 장 때문에 C와 경계하나 군체 의식은 아니다). E(Expansive): 목적이 전쟁 자체이며 성공할수록 세력이 커진다.","nat":[["Ma-II · St-II","고철과 폐기물을 모아 쓰는 수준이라 재료·구조 설계로 보기 어렵다."],["Me-III","Mek이 차량과 거대 병기를 만들고 정비하지만 설계가 엉성하고 믿음에 기대는 부분이 커 III로 둔다. 믿음에 기대는 부분은 Mg에서 평가한다."],["El-III","Kustom force field와 Shokk attack gun 같은 장치를 응용하나 불안정하다."],["Bi-III","Painboy·Mad Dok의 거친 수술과 생체 개조, 스퀴그 사육을 응용한다. 오크의 번식과 성장은 타고난 생태라 기술로 평가하지 않았다."],["Ae-III","Rok, Kroozer 같은 우주선과 항공기를 만들어 운용한다(안정적 재현 근거는 약함)."],["Qu · Nu","독립적인 기술 근거가 없어 —로 표기."]],"ext":[["Sp-II","Teleporta 같은 장치와 Weirdboy의 이동을 사용하지만 안정적이지 않다."],["Te · Ca · Mn","Waaagh!가 위계와 믿음을 퍼뜨리지만 오크가 정보를 설계·제어하지는 않아 Mn은 —로 표기. 시간·인과 기술은 없다."]],"mag":[["Mg-II","Weirdboy가 Waaagh! 에너지를 방출하고 Mek 기술이 이 장에 의존하지만, 오크는 원리를 모르고 제어하지 못한다(Weirdboy가 폭발하기도 함). 사용(II)으로 두며 III과 경계다."]],"ano":[["An","Waaagh!는 사이킥 장이라 Mg에서 평가하며 별도의 이상현상 기술은 없어 —로 표기."]]
-	}
-	,"src":"출처: BoLS의 Waaagh!·Mekboy 설명과 팬 위키 요약이며 설정 전체를 확인한 것은 아닙니다. 오크 기술이 믿음으로 작동하는지, 오크 고유의 원리인지는 자료마다 달라 Mg와 Me의 경계가 불확실합니다."
-	}
-	,
-	{
-	"n":"타우 제국 (T'au Empire)","w":"워해머 40,000","t":"게임","pd":[1,1,0,1],"l":[4,5,4,5,3,4,0,3,3,0,0,4,0,0],"img":"","why": {
-	"pdo":"P(Physics): 펄스·레일·중력 기술을 공학으로 정리해 쓰는 문명이며 Warp를 피한다. D(Outer): Sphere of Expansion으로 세계와 이종족을 흡수하며 퍼진다. C(Collective): 카스트 제도와 Ethereal의 지도로 사회가 움직인다. E(Expansive): 대의(Greater Good)를 퍼뜨리기 위한 확장이 핵심 지향이다.","nat":[["Ma-IV","Earth Caste가 병기와 건축 재료를 설계하지만 물성을 임의로 설계하는 수준(V)이라는 근거는 없다."],["Me-V","드론 AI와 전투복(battlesuit)을 정밀하게 설계·운용한다."],["St-IV","Earth Caste가 도시와 시설을 건설한다."],["El-V","펄스·이온 무기와 네트워크화한 센서·드론을 정밀하게 제어한다."],["Bi-III","의료·의수 기술은 있으나 생명 설계 수준은 아니다. Ethereal의 페로몬이 타고난 능력인지 개조인지 알려지지 않아 평가에서 뺐다."],["Nu-III","Nova 반응로 같은 소형 동력원을 응용한다(근거 약함)."],["Ae-IV","Air Caste가 함대와 궤도 작전을 운용한다."],["Qu","독립적인 기술 근거가 없어 —로 표기."]],"ext":[["Mn-IV","Water Caste의 외교·선전과 Ethereal의 권위로 대의를 퍼뜨리고 통신망으로 병력을 조율한다. 인지 효과를 정밀하게 보장하지는 못해 IV."],["Sp-III","짧은 Warp 도약과 중력 기술을 응용하지만 Warp 문제는 다른 종족에게 기대는 부분이 있어 III로 둔다(근거 약함)."],["Te · Ca","시간·인과 기술이 없어 —로 표기."]],"mag":[["Mg","Warp를 피하고 사이킥을 체계화하지 않아 —로 표기."]],"ano":[["An","이상현상을 기술 기반으로 삼는 체계가 없어 —로 표기."]]
-	}
-	,"src":"출처: Warhammer 40k Lexicanum의 Caste System·Earth Caste 문서, BoLS와 팬 정리글 요약이며 설정 전체를 확인한 것은 아닙니다. 에디션에 따라 Ethereal 설정이 달라지며 Nu·Sp 값은 근거가 약합니다."
-	}
-	,
-	{
-	"n":"TVA (신성한 시간선 체제)",
-	"w":"Loki 시즌 1~2 초반",
-	"t":"드라마",
-	"pd":[1,1,0,0],
-	"l":[4,5,5,4,0,0,0,0,5,6,5,0,0,0],
-	"img":"",
-	"why": {
-	"pdo":"P(Physics): 시간과 시간선은 세계의 실제 작동 구조이며, TVA는 이를 기술적으로 측정·추적·이동·재설정하는 체계로 다룬다. 시간의 특이성을 마법이나 이해 불가능한 이상현상 자체로 취급하지 않는다. O(Outer): 특정 도시나 행성이 아니라 시간선 전체를 관할하며 시간적·우주적 범위에 개입한다. C(Collective): 판사·헌터·미닛맨·분석가·기술 인력 등으로 분업된 관료 조직이 문명을 운용한다. S(Stasis): 남아있는 자의 신성한 시간선을 유지하고 허용되지 않은 분기를 제거하여 정해진 시간 구조를 보존하는 것이 핵심 목적이다.",
-	"nat":[["Ma-IV · Me-V · St-V · El-IV","TVA의 시설과 각종 장비를 제작·운용하며, 기계·구조·전자 시스템을 조직적으로 유지한다. 세부 기술 원리가 충분히 제시되지 않은 분야는 보수적으로 평가한다."]],
-	"ext":[["Sp-V","시간과 공간을 넘어 TVA와 시간선 사이를 이동하고 관련 장비를 반복적으로 운용한다."],["Te-VI","시간 이동, 시간선 감시, 분기 탐지, 시간선 재설정 및 분기 제거를 체계적으로 수행한다."],["Ca-V","시간선의 분기와 그 결과를 판정하고 관리하지만 인과율 자체를 자유롭게 개변하는 수준까지는 명확하지 않다."]],
-	"mag":[["Mg-—","마법적 규칙을 문명의 기술 기반으로 삼는다는 근거가 없다."]],
-	"ano":[["An-—","시간의 특수성과 변칙적 사건을 다루지만 이상현상 자체를 문명의 근본 기술 원리로 삼는 체계는 아니다."]]
-	}
-	,"src":"Loki 시즌 1~2 초반의 TVA를 남아있는 자가 구축한 신성한 시간선 관리 체제로 평가한 예시. TVA는 시간선을 관리하는 기술·관료 조직이며, 핵심 목표가 하나의 시간선 상태를 보존하는 것이므로 Objective를 Stasis로 판정한다."
-	}
-	,
-	{
-	"n":"TVA (로키 이후)",
-	"w":"Loki 시즌 2 최종 이후",
-	"t":"드라마",
-	"pd":[1,1,0,1],
-	"l":[4,5,5,4,0,0,0,0,5,6,5,0,0,0],
-	"img":"",
-	"why": {
-	"pdo":"P(Physics): 시간선과 멀티버스의 구조를 기술적으로 관찰·관리하며, 로키가 시간의 중심에서 시간선을 유지하는 것과 TVA의 운영 원리는 마법 체계가 아니라 시간 구조를 다루는 기술적 체계로 나타난다. O(Outer): 하나의 시간선이 아니라 여러 시간선과 멀티버스 전체를 관찰·관리한다. C(Collective): 로키가 직접 모든 업무를 수행하는 것이 아니라 TVA의 판사·헌터·분석가·기술 인력 등이 조직적으로 멀티버스를 관리한다. E(Expansive): 더 이상 하나의 신성한 시간선을 보존하기 위해 다른 분기를 제거하는 것이 아니라 여러 시간선의 존재를 허용하고 전체 멀티버스의 존속을 관리하는 방향으로 목적이 전환된다.",
-	"nat":[["Ma-IV · Me-V · St-V · El-IV","기존 TVA의 시설·장비·기술 체계를 계속 운용하며 멀티버스 관리에 사용한다."]],
-	"ext":[["Sp-V","여러 시간선과 TVA 사이를 오가며 멀티버스 규모의 시간 구조를 관리한다."],["Te-VI","시간선의 생성·분기·이동·관찰과 Temporal Loom 및 시간선 구조에 대한 대응까지 수행한다."],["Ca-V","여러 시간선의 분기와 관계를 관리하지만 인과율 자체를 자유롭게 개변한다고 단정할 근거는 부족하다."]],
-	"mag":[["Mg-—","TVA의 기술 체계가 마법적 규칙을 기반으로 한다는 근거가 없다."]],
-	"ano":[["An-—","멀티버스의 변칙적 사건을 관리하지만 이상현상 자체를 문명의 근본 원리로 삼지는 않는다."]]
-	}
-	,"src":"Loki 시즌 2 최종 이후의 TVA를 평가한 예시. 남아있는 자의 단일 Sacred Timeline 보존 체제와 달리 여러 시간선의 공존과 멀티버스 전체의 관리를 목적으로 하므로 Objective를 Expansive로 판정한다."
-	}
-	];
 	function mini(svg,l) {
 	const cx=100,cy=100,R=72,n=14,pt=(i,r)=>[cx+r*Math.cos(-Math.PI/2+i*2*Math.PI/n),cy+r*Math.sin(-Math.PI/2+i*2*Math.PI/n)];
 	for(let k=2;
@@ -1403,7 +1372,7 @@ const G=[ {
 	return b
 	}
 	const EXD=[];
-	EXS.forEach(e=> {
+	function addExample(e) {
 	const d=document.createElement("div");
 	d.className="card exd";
 	d.hidden=true;
@@ -1479,7 +1448,6 @@ const G=[ {
 	);
 	$("exg").appendChild(pv);
 	}
-	);
 	let LC= {
 	nat:"#3b6ea8",ext:"#7b5ea7",mag:"#c98a1b",ano:"#b0443c"
 	}
@@ -1937,8 +1905,6 @@ const G=[ {
 	;
 	updCount();
 	syncSave();
-	mini($("homeSvg"),EXS[0].l);
-	$("homeCap").textContent=EXS[0].n+" 예시 · "+pdoStr(EXS[0].pd);
 	$("goMake").onclick=()=>tab(1);
 	$("goEx").onclick=()=>tab(2);
 	setWhy(null);
@@ -1946,6 +1912,8 @@ const G=[ {
 	title();
 	buildRows();
 	render();
+	homeUpdate();
+	loadExamples();
 </script>
 </body>
 </html>
