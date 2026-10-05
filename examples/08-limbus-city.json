@@ -1,0 +1,76 @@
+{
+  "n": "도시 문명",
+  "w": "림버스 컴퍼니",
+  "t": "게임",
+  "pd": [
+    2,
+    0,
+    0,
+    0
+  ],
+  "l": [
+    4,
+    5,
+    5,
+    5,
+    4,
+    4,
+    3,
+    3,
+    5,
+    5,
+    2,
+    2,
+    0,
+    5
+  ],
+  "img": "",
+  "why": {
+    "pdo": "P(Anomaly): 각 Wing의 Singularity는 물리법칙을 무시하는 특허 기술이며, 근원이 L Corp의 Cogito(인간 정신의 물질화)와 Abnormality, K Corp의 눈물 생물처럼 물리나 마법으로 환원되지 않는 존재와 개념에 있다. 문명이 마법이라 부르지도 않고 물리로 설명되지도 않으므로 P-A로 판정한다(Sp·Te 등 새 원리로 설명되는 부분은 해당 분야로 따로 평가하며 P-P와 경계). I(Inner): 26개 District의 Nest와 Backstreets 중심의 도시국가이고 외부 확장 근거는 약하다. C(Collective): Wings·Head·Associations가 기술과 사회를 운용한다(Fixers 개인의 힘이 커서 O-I와 경계). S(Stasis): Head가 금기와 특허를 관리하며 도시 질서를 유지하는 쪽이다(Wings 간 경쟁이 치열해 E와 경계).",
+    "nat": [
+      [
+        "Ma-IV · Me-V · St-V · El-V",
+        "Singularity 의존분을 빼면 일반 공학 축의 직접 근거가 간접적이라 현대 인류와 같은 수준으로 계상한다."
+      ],
+      [
+        "Bi-IV · Mn-IV",
+        "치유·복제 계열은 Singularity 기반이라 An에서 따로 보고, 일반 생명공학과 정보·감시망은 보수적으로 둔다."
+      ],
+      [
+        "Qu-III · Nu-III · Ae-II",
+        "직접 근거가 없어 낮게 가정했고 우주항행 근거는 없다."
+      ]
+    ],
+    "ext": [
+      [
+        "Bi-IV · Mn-IV",
+        "치유·복제 계열은 Singularity 기반이라 An에서 따로 보고, 일반 생명공학과 정보·감시망은 보수적으로 둔다."
+      ],
+      [
+        "Sp-V",
+        "W Corp의 순간이동·워프 열차, P Corp의 공간 탄성처럼 공간 계열 Singularity가 상용화되어 있다."
+      ],
+      [
+        "Te-V",
+        "T Corp의 TimeTrack은 국지적 시간 가속·감속·정지·되감기와 루프를 수행하고 시간을 포장·징수해 화폐처럼 쓰지만, 완전한 시간 조작은 아니라 V~VI 경계로 보고 VI는 보류했다."
+      ],
+      [
+        "Ca-II",
+        "J·F Corp의 개념 잠금·해제처럼 개념 영역에 접근하나 인과 자체를 대상으로 한다는 명시는 부족하다."
+      ]
+    ],
+    "mag": [
+      [
+        "Mg-—",
+        "마법에 기반한 기술은 없다."
+      ]
+    ],
+    "ano": [
+      [
+        "An-V",
+        "Abnormality에서 Enkephalin을 추출해 도시 에너지로 쓰고, Singularity를 특허·규제·버전 관리하며 상용화한다. 다만 L Corp의 Abnormality 관리는 탈주 사고가 반복되어 IV~V 경계이고, 이상현상의 근원 자체에 개입한다는 근거는 없어 VI는 보류했다."
+      ]
+    ]
+  },
+  "src": "출처: 위키피디아(Limbus Company, Library of Ruina, Lobotomy Corporation), 프로젝트 문 팬위키, 나무위키 Wings 문서 요약이며 작품 전체를 확인한 것은 아닙니다. Singularity의 근원이 모두 공식적으로 밝혀진 것은 아닙니다."
+}
